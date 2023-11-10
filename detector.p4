@@ -43,13 +43,13 @@ control MyIngress(inout headers hdr,
     }
 
     apply {
-      /* TODO: This is where you need to increment the active counter */
+        /* TODO: This is where you need to increment the active counter */
 
         repeater.apply();
     }
 }
 
-/***********************Receive**************************************************
+/*************************************************************************
 ****************  E G R E S S   P R O C E S S I N G   *******************
 *************************************************************************/
 
@@ -57,11 +57,11 @@ control MyEgress(inout headers hdr,
                  inout metadata meta,
                  inout standard_metadata_t standard_metadata) {
 
-    /* TODO: Define the register array(s) that you will use in the ingress pipeline */
+    /* TODO: Define the register array(s) that you will use in the egress pipeline */
 
     apply {
         /* TODO: This is where you need to increment the active counter */
-        /* TODO: You also need to add the values of the active counter in every data packet using the ipv4 ecn field */
+        /* TODO: You also need to indicate the active counter in every data packet using the IPv4 ecn field */
     }
 }
 

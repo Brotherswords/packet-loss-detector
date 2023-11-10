@@ -5,7 +5,6 @@ net = NetworkAPI()
 # Network general options
 net.setLogLevel('info')
 net.setCompiler(p4rt=True)
-net.execScript('python controller.py', reboot=True)
 net.enableCli()
 
 # Network definition
@@ -27,7 +26,7 @@ net.addLink('s3', 'h2')
 # Switch to switch link
 net.addLink('s1', 's2')
 net.addLink('s2', 's3')
-net.addLink('s3', 's4')
+net.addLink('s4', 's3')
 net.addLink('s4', 's1')
 
 # Assignment strategy
