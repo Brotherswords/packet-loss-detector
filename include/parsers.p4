@@ -24,6 +24,7 @@ parser MyParser(packet_in packet,
 
     state parse_ipv4 {
         packet.extract(hdr.ipv4);
+        meta.counter_index = hdr.ipv4.ecn & 0x01;
         transition select(hdr.ipv4.protocol){
             6 : parse_tcp;
             default: accept;

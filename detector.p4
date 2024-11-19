@@ -25,6 +25,8 @@ control MyIngress(inout headers hdr,
                   inout standard_metadata_t standard_metadata) {
 
     /* TODO: Define the register array(s) that you will use in the ingress pipeline */
+    register<bit<32>>(2) ingress_counters;
+
 
     action forward(bit<9> egress_port){
         standard_metadata.egress_spec = egress_port;
@@ -45,6 +47,8 @@ control MyIngress(inout headers hdr,
     apply {
         /* TODO: This is where you need to increment the active counter */
 
+        bit<1> index = meta.counter_index;
+        ingress_counters[index].count(1);
         repeater.apply();
     }
 }
@@ -58,10 +62,23 @@ control MyEgress(inout headers hdr,
                  inout standard_metadata_t standard_metadata) {
 
     /* TODO: Define the register array(s) that you will use in the egress pipeline */
+    register<bit<32>>(2) egress_counters;
 
     apply {
-        /* TODO: This is where you need to increment the active counter */
+        /* Read the active counter index from the register */
+        bit<1> index;
+        active_counter_index.read(index, 0);
+        meta.counter_index = index;
+
+
         /* TODO: You also need to indicate the active counter in every data packet using the IPv4 ecn field */
+        /* Set the ECN field to indicate the active counter index */
+        if (hdr.ipv4.isValid()) {
+            hdr.ipv4.ecn = meta.counter_index;
+        }
+        /* TODO: This is where you need to increment the active counter */
+        /* Increment the appropriate egress counter */
+        egress_counters[index].count(1);
     }
 }
 
