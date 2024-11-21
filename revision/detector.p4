@@ -15,15 +15,23 @@ control MyVerifyChecksum(inout headers hdr, inout metadata meta) {
 }
 
 /*************************************************************************
+*******************  O U R   R E G I S T E R S  **************************
+*************************************************************************/
+
+// register arrays for ingress and egress counters
+register<bit<32>>(2) ingress_counters;
+register<bit<32>>(2) egress_counters;
+
+// a single register to store the active counter index
+register<bit<2>>(1) active_counter;
+
+/*************************************************************************
 **************  I N G R E S S   P R O C E S S I N G   *******************
 *************************************************************************/
 
 control MyIngress(inout headers hdr,
                   inout metadata meta,
                   inout standard_metadata_t standard_metadata) {
-
-    // Define register arrays for ingress counters
-    register<bit<32>>(2) ingress_counters;
 
     action forward(bit<9> egress_port) {
         standard_metadata.egress_spec = egress_port;
@@ -42,13 +50,13 @@ control MyIngress(inout headers hdr,
     }
 
     apply {
-        // Read the active counter index (from ECN field)
-        bit<32> active_index = (bit<32>) hdr.ipv4.ecn;  // Cast to bit<32>
+        // Read the active counter index from the ECN field of the packet
+        bit<2> active_index = hdr.ipv4.ecn;
 
         // Increment the active ingress counter
-        ingress_counters.read(meta.counter, active_index);
+        ingress_counters.read(meta.counter, (bit<32>) active_index);
         meta.counter = meta.counter + 1;
-        ingress_counters.write(active_index, meta.counter);
+        ingress_counters.write((bit<32>) active_index, meta.counter);
 
         repeater.apply();
     }
@@ -62,20 +70,18 @@ control MyEgress(inout headers hdr,
                  inout metadata meta,
                  inout standard_metadata_t standard_metadata) {
 
-    // Define register arrays for egress counters
-    register<bit<32>>(2) egress_counters;
-
     apply {
-        // Read the active counter index (from ECN field)
-        bit<32> active_index = (bit<32>) hdr.ipv4.ecn;  // Cast to bit<32>
+        // Read the active counter index from the active_counter register
+        bit<2> active_index;
+        active_counter.read(active_index, 0);
 
         // Increment the active egress counter
-        egress_counters.read(meta.counter, active_index);
+        egress_counters.read(meta.counter, (bit<32>) active_index);
         meta.counter = meta.counter + 1;
-        egress_counters.write(active_index, meta.counter);
+        egress_counters.write((bit<32>) active_index, meta.counter);
 
         // Indicate the active counter in the ECN field
-        hdr.ipv4.ecn = (bit<2>) active_index;  // Set ECN field (back to bit<2>)
+        hdr.ipv4.ecn = active_index;
     }
 }
 

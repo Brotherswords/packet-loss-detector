@@ -10,17 +10,19 @@ import random
 from scapy.all import sendp, get_if_list, get_if_hwaddr
 from scapy.all import Ether, IP, UDP, TCP
 
+
 def get_if():
-    ifs=get_if_list()
-    iface=None # "h1-eth0"
+    ifs = get_if_list()
+    iface = None  # "h1-eth0"
     for i in get_if_list():
         if "eth0" in i:
-            iface=i
+            iface = i
             break
     if not iface:
         print("Cannot find eth0 interface")
         exit(1)
     return iface
+
 
 def get_dst_mac(ip):
 
@@ -32,15 +34,15 @@ def get_dst_mac(ip):
     except:
         return None
 
+
 def main():
 
-    if len(sys.argv)<3:
+    if len(sys.argv) < 3:
         print('pass 2 arguments: <destination> "<message>"')
         exit(1)
 
     addr = socket.gethostbyname(sys.argv[1])
     iface = get_if()
-
 
     tos = 0
 
@@ -51,12 +53,13 @@ def main():
         exit(1)
 
     print("Sending on interface %s to %s" % (iface, str(addr)))
-    pkt =  Ether(src=get_if_hwaddr(iface), dst=ether_dst)
-    pkt = pkt /IP(dst=addr,tos=tos,proto=6) / sys.argv[2]
+    pkt = Ether(src=get_if_hwaddr(iface), dst=ether_dst)
+    pkt = pkt / IP(dst=addr, tos=tos, proto=6) / sys.argv[2]
 
     while True:
         sendp(pkt, iface=iface, verbose=False)
-        time.sleep(0.05+random.uniform(0, 0.3))
+        time.sleep(0.05 + random.uniform(0, 0.3))
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()
